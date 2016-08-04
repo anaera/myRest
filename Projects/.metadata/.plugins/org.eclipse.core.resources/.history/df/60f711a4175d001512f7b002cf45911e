@@ -1,0 +1,154 @@
+package my.rest;
+
+import java.io.IOException;
+//import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.io.InputStreamReader;
+//import java.io.DataOutputStream;
+import java.io.BufferedReader;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * Servlet implementation class SrvltMyRest
+ */
+@WebServlet("/SrvltMyRest")
+public class SrvltMyRest extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	private final String USER_AGENT ="Mozilla/5.0";
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+
+
+		String str_pt = request.getParameter("pt");
+		String str_m = request.getParameter("m");
+		
+//		String str_v = request.getParameter("v");
+//		String str_dir = request.getParameter("dir");
+//		String response = "";
+		String setString = new String();
+		String itemName [] = {"m1p0","m1p1","m1p2","m1p3","m1p4","m1p5","m1p6","m1p7"};
+
+		
+		if (str_pt == "" || str_pt == null) 
+			{System.out.println("Value Pointer Code not defind");
+			return;
+			}
+		
+		byte value_pt = 0;
+			try {
+				value_pt = Byte.parseByte(str_pt);
+				}
+				catch (Exception ex)
+				{
+				System.out.println("Value Pointer Code : " + value_pt);	
+				}
+			
+		if (value_pt < 0 || value_pt > 14)
+			{System.out.println("Value Pointer out of interval");
+//			doSetError( response );
+			return;
+			}
+
+		double value_m = 0;
+		if (str_m == "" || str_m == null) 
+		{	setString = itemName [value_pt]+"=ON";
+		System.out.println("Set UpDown Code not defind. SetItem ->ON");
+		}
+		else
+		{
+			try {
+			    value_m = Byte.parseByte(str_m);
+				}
+				catch ( Exception ex )
+				{
+					System.out.println("Set UpDown Code Exception");	
+				}
+			if (value_m == 1)
+				{
+				setString = itemName[value_pt]+"=OFF";
+				System.out.println("Set UpDown Code defind = 1. SetItem ->OFF");
+				}
+			else
+			{	
+				System.out.println("Value UpDn out of interval");
+				return;
+			}
+		}
+
+//----------------------------------------------------------------------			    
+				try
+					{
+					sendGet(setString);
+					}
+				catch ( Exception ex )
+					{
+					System.out.println("sendGet Exception");
+					}			
+
+//----------------------------------------------------------------------
+//			    doSetResult( response, result );
+//			    return;
+
+//		}
+
+	}
+
+	protected void sendGet(String setString) throws Exception {
+			
+	    System.out.println("Testing 1 - Send Http GET request");
+		String openHabURL = "http://10.32.0.251:8080/CMD?"+setString;
+		URL url = new URL(openHabURL);
+//		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+// optional default is GET
+		con.setRequestMethod("GET");
+//		con.setRequestMethod("POST");
+//		con.setDoOutput(true);
+
+//add request header
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		
+		
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'GET' request to URL : " + openHabURL);
+		System.out.println("Response Code : " + responseCode);
+
+		BufferedReader in = new BufferedReader(
+		new InputStreamReader(con.getInputStream()));
+		
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+
+		while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+				}
+		in.close();
+
+//print result
+		System.out.println(response.toString());
+		}
+/*
+	protected void doSetResult( HttpServletResponse response, double result ) throws UnsupportedEncodingException, IOException {
+	    String reply = "{\"error\":0,\"result\":" + Double.toString(result) + "}";
+	    response.getOutputStream().write( reply.getBytes("UTF-8") );
+	    response.setContentType("application/json; charset=UTF-8");
+	    response.setHeader("Access-Control-Allow-Origin", "*");
+	    response.setStatus( HttpServletResponse.SC_OK );
+	}
+	
+	protected void doSetError( HttpServletResponse response ) throws UnsupportedEncodingException, IOException {
+	    String reply = "{\"error\":1}";
+	    response.getOutputStream().write( reply.getBytes("UTF-8") );
+	    response.setContentType("application/json; charset=UTF-8");
+	    response.setHeader("Access-Control-Allow-Origin", "*");
+	    response.setStatus( HttpServletResponse.SC_OK );
+	}
+*/
+
+}
